@@ -1,12 +1,12 @@
-import pandas as pd
-from math import sqrt
 from collections import Counter
+from StatisticalModel import euclidean_distance_2d
+
 
 class KNeightboursClassifier:
     K = 5
     data = []
     target_names = []
-    
+
     def __init__(self, n_neighbours=5):
         self.K = n_neighbours
 
@@ -17,24 +17,21 @@ class KNeightboursClassifier:
     def predict(self, X):
         result, intermediate = [], []
         for test_instance in X:
+            # Calculate the Euclidean distance of each data point with the test instance
+            # A distance keypair is in the format `euclidean_distance: label`
             distances = {}
             for data, target_name in zip(self.data, self.target_names):
-                distance = self.euclidean_distance(data, test_instance, len(test_instance))
+                distance = euclidean_distance_2d(data, test_instance, len(test_instance))
                 distances[distance] = target_name
 
-            keys = list(distances.keys())
-            keys.sort()
+            # Retrieve the top-K nearest neighbour and store it in an intermediary result
+            keys = sorted(list(distances.keys()))
             neighbours = [distances[key] for key in keys[:self.K]]
             intermediate.append((test_instance, neighbours))
-        
+
+        # Classify test instance with the most common Label of the neighbours
         for test_instance, neighbours in intermediate:
             counter = Counter(neighbours)
             result.append([test_instance, counter.most_common(1)[0][0]])
-        
-        return result
 
-    def euclidean_distance(self, a, b, length):
-        distance = 0
-        for i in range(length):
-            distance += pow(a[i] - b[i], 2)
-        return sqrt(distance)
+        return result
