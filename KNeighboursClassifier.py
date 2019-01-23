@@ -15,23 +15,22 @@ class KNeightboursClassifier:
         self.target_names = y
 
     def predict(self, X):
-        result, intermediate = [], []
-        for test_instance in X:
-            # Calculate the Euclidean distance of each data point with the test instance
+        result = []
+        for instance in X:
+            # Calculate the Euclidean distance of each data point
             # A distance keypair is in the format `euclidean_distance: label`
-            distances = {}
-            for data, target_name in zip(self.data, self.target_names):
-                distance = euclidean_distance_2d(data, test_instance, len(test_instance))
-                distances[distance] = target_name
+            distances = {
+                euclidean_distance_2d(data, instance, len(instance)): label
+                for data, label in zip(self.data, self.target_names)
+            }
 
-            # Retrieve the top-K nearest neighbour and store it in an intermediary result
+            # Retrieve the top-K nearest neighbour and store it in an
+            # intermediary result (instance: neighbours)
             keys = sorted(list(distances.keys()))
             neighbours = [distances[key] for key in keys[:self.K]]
-            intermediate.append((test_instance, neighbours))
 
-        # Classify test instance with the most common Label of the neighbours
-        for test_instance, neighbours in intermediate:
+            # Classify test instance with the most common neighbour
             counter = Counter(neighbours)
-            result.append([test_instance, counter.most_common(1)[0][0]])
+            result.append([instance, counter.most_common(1)[0][0]])
 
         return result
